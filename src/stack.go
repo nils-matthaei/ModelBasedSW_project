@@ -1,5 +1,7 @@
 package main
 
+import "iter"
+
 type Stack[T any] struct {
 	data []T
 }
@@ -38,3 +40,17 @@ func (s *Stack[T]) Len() int {
 func (s *Stack[T]) IsEmpty() bool {
 	return len(s.data) == 0
 }
+
+// All() Function returns an iterator over all elements in the stack
+func (s *Stack[T]) All() iter.Seq[T] {
+	return func(yield func(T) bool) {
+		for _, v := range s.data {
+			if !yield(v) {
+				return
+			}
+		}
+	}
+}
+
+
+
