@@ -29,12 +29,12 @@ func(yield func(V) bool)
 
 func(yield func(K, V) bool)
 ```
-In Go, a function of one of these types, is called a _push iterator_. This is the default kind of iterator and therefore also often just called iterator. There is, howerver, also another kind of iterator called the _pull iterator_.
+In Go, a function of one of these types, is called a _push iterator_. This is the default kind of iterator and therefore also often just called iterator. There is, however, also another kind of iterator called the _pull iterator_.
 
 ### 3.1 Push Iterators
 A push iterator is a function that "pushes" values to a provided yield function, one at a time. When ranging over a push iterator, the Go runtime repeatedly calls the iterator, which in turn invokes the yield function for each element in the collection. This allows the iterator to control the flow of elements, sending each value to the yield function until there are no more elements or the yield function signals to stop.
 
-To implement iterators, Go 1.23 introduced a new standard library package called _iter_. This packages defines the types `Seq` and `Seq2`. These are names for two of the iterator function types:
+To implement iterators, Go 1.23 introduced a new standard library package called _iter_. This package defines the types `Seq` and `Seq2`. These are names for two of the iterator function types:
 
 ```Go
 package iter
@@ -43,9 +43,9 @@ type Seq[V any] func(yield func(V) bool)
 
 type Seq2[K, V any] func(yield func(K, V) bool)
 ```
-So far there is no `Seq0` that would define `func(yield func() bool)`, for some reason.
+So far, there is no `Seq0` that would define `func(yield func() bool)`, for some reason.
 
-Using these it's quite simple to define an iterator over a generic container type.
+Using these, it's quite simple to define an iterator over a generic container type.
 As an example, let's look at this simple implementation of a Stack:
 ```Go
 type Stack[T any] struct {
@@ -87,7 +87,7 @@ func (s *Stack[T]) IsEmpty() bool {
 	return len(s.data) == 0
 }
 ```
-By convention, the method to return an iterator over a contaier is called `All()`. For our Stack, this method could look like this:
+By convention, the method to return an iterator over a container is called `All()`. For our Stack, this method could look like this:
 ```Go
 import "iter"
 /*...*/
@@ -101,7 +101,7 @@ func (s *Stack[T]) All() iter.Seq[T] {
 	}
 }
 ```
-With the `All()` method implemented it is possible to iterate over the Stack using the iterator it provides.
+With the `All()` method implemented, it is possible to iterate over the Stack using the iterator it provides.
 ```Go
 func PrintStack[T any](s *Stack[T]) {
 	for v := range s.All() {
@@ -109,21 +109,21 @@ func PrintStack[T any](s *Stack[T]) {
 	}
 }
 ```
-The returned iterator function takes the _yield_ function as an argument. In the case of the for/range statement that _yield_ fuction is automatically generated at compile time. This is relatively complex to do efficiently, but luckily the details of this are not important for using iterators. The way iteratiors like work is:
-- For a sequence of values, the iterator calls a yield function with each value in the sequence
-- If the yield function returns false, no more values are needed
-   - The iterator can now return and do any needed cleanup
-- If the yield function never returns false: return after calling yield with all values
+The returned iterator function takes the _yield_ function as an argument. In the case of the for/range statement, that _yield_ function is automatically generated at compile time. This is relatively complex to do efficiently, but luckily the details of this are not important for using iterators. The way iterators like this work is:
+- For a sequence of values, the iterator calls a yield function with each value in the sequence.
+- If the yield function returns false, no more values are needed.
+   - The iterator can now return and do any needed cleanup.
+- If the yield function never returns false: return after calling yield with all values.
 
 ### 3.2 Pull Iterators
 
-Pull iterators can be used to access one value at a time, instead of ranging over the entire sequence as is the case with Push iterators. To get a pull iterator the `iter` package provides two functions `Pull` and `Pull2`. They convert a push iterator into a pull iterator, by returning two functions `next` and `stop`
-- `next` returns the next value in the sequence and a boolean indicating whether the value is valid
-- `stop` ends the iteration
-  - must be called when caller no longer wants to iterate, but `next` has not yet indicated that the sequence is over
-  - typically callers should `defer stop()`
+Pull iterators can be used to access one value at a time, instead of ranging over the entire sequence as is the case with push iterators. To get a pull iterator, the `iter` package provides two functions: `Pull` and `Pull2`. They convert a push iterator into a pull iterator by returning two functions, `next` and `stop`:
+- `next` returns the next value in the sequence and a boolean indicating whether the value is valid.
+- `stop` ends the iteration.
+  - Must be called when the caller no longer wants to iterate, but `next` has not yet indicated that the sequence is over.
+  - Typically, callers should `defer stop()`.
 
-For example this could be used to create a pairwise iterator
+For example, this could be used to create a pairwise iterator:
 
 ```Go
 func Pairwise[V any](seq iter.Seq[V]) iter.Seq2[V, V] {
