@@ -240,3 +240,5 @@ TODO
 ## 6 Sources
 - https://go.dev/blog/range-functions
 - https://pkg.go.dev/iter
+- https://pkg.go.dev/slices
+- https://pkg.go.dev/maps
