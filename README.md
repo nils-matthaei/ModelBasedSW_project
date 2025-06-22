@@ -170,11 +170,69 @@ The `Pairwise` function takes a standard `Seq` iterator and returns a `Seq2` ite
 ```
 
 ## 4 Standard Library Functions
-TODO
-### 4.1 Slices
-TODO
-### 4.2 Maps
-TODO
+Together with iterators came some new standard library functions in the `slices` and `maps` packages that work with iterators. These provide some useful new features when working with slices and maps.
+
+Here are some examples:
+
+- `All`: this function takes a slice or a map and returns a `Seq2` iterator over the container
+- `Values`: takes a slice or map and returns a `Seq` iterator over the container's values
+- `Keys`: takes a map and returns a `Seq` iterator over its keys
+- `Collect`:
+  - for slices: takes a `Seq` iterator and collects its values in a slice
+  - for maps: takes a `Seq2` iterator and collects its key-value pairs in a map
+- `Backward`: takes a slice and returns an iterator that iterates over the values of the slice backwards
+- `Sorted`: takes an iterator over ordered values and collects the values into a slice, then sorts the slice and returns it.
+
+These new functions provide some extra convenience when handling slices and maps.
+
+For example:
+
+```Go
+func CollectMapValues[K comparable, V any](m map[K]V) []V {
+	return slices.Collect(maps.Values(m))
+}
+
+func CollectMapsValuesSorted[K comparable, V cmp.Ordered](m map[K]V) []V {
+	return slices.Sorted(maps.Values(m))
+}
+
+func CollectMapKeys[K comparable, V any](m map[K]V) []K {
+	return slices.Collect(maps.Keys(m))
+}
+
+func CollectMapKeysSorted[K cmp.Ordered, V any](m map[K]V) []K {
+	return slices.Sorted(maps.Keys(m))
+}
+
+func STLfunctions() {
+	m := map[string]int{"a": 1, "b": 2, "c": 3, "d": 4}
+
+	s_v := CollectMapValues(m)
+	for _, v := range s_v {
+		println(v)
+	}
+
+	s_k := CollectMapKeys(m)
+	for _, k := range s_k {
+		println(k)
+	}
+
+	s_v_sorted := CollectMapsValuesSorted(m)
+	for _, v := range s_v_sorted {
+		println(v)
+	}
+
+	// Print values in reverse order using slices.Backward
+	for _, v := range slices.Backward(s_v_sorted) {
+		println(v)
+	}
+
+	s_k_sorted := CollectMapKeysSorted(m)
+	for _, k := range s_k_sorted {
+		println(k)
+	}
+}
+```
 
 ## 5 Summary
 TODO

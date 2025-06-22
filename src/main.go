@@ -1,6 +1,11 @@
 package main
 
-import "iter"
+import (
+	"cmp"
+	"iter"
+	"maps"
+	"slices"
+)
 
 func PrintStack[T any](s *Stack[T]) {
 	// Iterate over stack using the All() function
@@ -43,6 +48,51 @@ func PrintPairs[T any](s *Stack[T]) {
 	}
 }
 
+func CollectMapValues[K comparable, V any](m map[K]V) []V {
+	return slices.Collect(maps.Values(m))
+}
+
+func CollectMapsValuesSorted[K comparable, V cmp.Ordered](m map[K]V) []V {
+	return slices.Sorted(maps.Values(m))
+}
+
+func CollectMapKeys[K comparable, V any](m map[K]V) []K {
+	return slices.Collect(maps.Keys(m))
+}
+
+func CollectMapKeysSorted[K cmp.Ordered, V any](m map[K]V) []K {
+	return slices.Sorted(maps.Keys(m))
+}
+
+func STLfunctions() {
+	m := map[string]int{"a": 1, "b": 2, "c": 3, "d": 4}
+
+	s_v := CollectMapValues(m)
+	for _, v := range s_v {
+		println(v)
+	}
+
+	s_k := CollectMapKeys(m)
+	for _, k := range s_k {
+		println(k)
+	}
+
+	s_v_sorted := CollectMapsValuesSorted(m)
+	for _, v := range s_v_sorted {
+		println(v)
+	}
+
+	// Print values in reverse order using slices.Backward
+	for _, v := range slices.Backward(s_v_sorted) {
+		println(v)
+	}
+
+	s_k_sorted := CollectMapKeysSorted(m)
+	for _, k := range s_k_sorted {
+		println(k)
+	}
+}
+
 func main() {
 	// Build stack
 	s := NewStack[int]()
@@ -52,4 +102,5 @@ func main() {
 
 	PrintStack(s)
 	PrintPairs(s)
+	STLfunctions()
 }
