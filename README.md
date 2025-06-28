@@ -3,10 +3,9 @@ Range Over Function Types in Go - This repository contains my final project for 
 
 ## 1 About the project
 Range over function types is a relatively new feature in Go. It was added in version 1.23 on August 13th, 2024. This project aims to answer the following questions:
-- What problem does this feature solve?
-  - What are its typical use cases?
-- Is the provided solution complete and satisfactory?
-- Is this an important addition to the Go language?
+1. What problem does this feature solve? What are its typical use cases?
+2. Is the provided solution complete and satisfactory?
+3. Is this an important addition to the Go language?
 
 ## 2 Motivation
 Go version 1.18 added the ability for users to define their own generic container types such as Sets, Queues, Trees, etc. However, what was still lacking was a standardized way to iterate over all elements in a user-defined collection. In many other programming languages like C++, Python, Java, or Rust, just to name a few, this is solved via _Iterators_. Iterators serve as a way to access all elements in a container, or aggregate object, without directly exposing the underlying data structure.
@@ -340,7 +339,28 @@ Those methods include:
 just to name a few useful ones.
 
 ## 6 Summary
-TODO
+The goal of this project was to answer the following three questions:
+
+> What problem does this feature solve? What are its typical use cases?
+
+This was answered extensively in chapters 2 and 3. In short: the ability to range over (certain) function types was added to provide a standardized way to iterate over user-defined container types. This was supposed to be what _Iterators_ are in other programming languages.
+
+> Is this an important addition to the Go language?
+
+The answer to this is entirely subjective. In my opinion the answer is: no... and yes.
+- No because: This feature is not actually a new feature, Go did not get more powerful by adding it, it just introduced a standardized way of doing something that was already possible.
+- Yes because: Personally I think standardization is important because it helps make code more readable and thus better maintainable. Especially in cases as common as iterating over a user-defined container.
+
+> Is the provided solution complete and satisfactory?
+
+_Is the solution complete?_ Mostly yes. It allows for push-style and pull-style iteration over containers, and the `iter` package provides a standard way to implement this. However, the goal of standardization still somewhat fails in my eyes, since iterating over user-defined containers and standard library containers is still different; the former need to be iterated over using an iterator _conventionally_ provided by the `All` method, while the latter don't need this and can just be iterated over using `for/range` directly.
+
+_Is the solution satisfactory?_ Again, this is very subjective. Personally, I prefer the way that Rust chose with an interface that requires the `next` function. When thinking of an interface, this is what I would expect and find intuitive, and thus I found the way chosen in Go very unintuitive at first. However, once I understood it and got used to it, it was not really any harder to use or implement than I was used to from other languages. But in the end, I'm still left with some questions:
+- Why was this unconventional way of implementing iterators chosen?
+- Why the difference between iterating over user-defined containers and standard library containers?
+- Why isn't there an interface that requires implementing the `All` method?
+
+In conclusion, I say that I think providing a standardized iterator implementation was a useful addition to the Go language; however, the way this was done sadly feels more like an added-on hack than a smoothly integrated feature.
 
 ## 7 Sources
 - https://go.dev/blog/range-functions
