@@ -2,8 +2,15 @@ mod stack;
 use stack::Stack;
 
 fn print_stack<T: std::fmt::Display>(stack: &Stack<T>) {
-    // Push-style: for loop (uses IntoIterator Trait)
+    // Push-style: for loop using IntoIterator Trait
     for value in stack {
+        println!("{value}");
+    }
+}
+
+fn print_stack_iter<T: std::fmt::Display>(stack: &Stack<T>) {
+    // Push-style: for loop using an Iterator
+    for value in stack.iter() {
         println!("{value}");
     }
 }
@@ -26,7 +33,13 @@ fn main() {
         stack.push(i);
     }
 
+    print_stack_iter(&stack);
+
     print_stack(&stack);
 
     print_pairwise(&stack);
+
+    for x in stack.iter().filter(|&x| x % 2 == 0) {
+        println!("{x}");
+    }
 }

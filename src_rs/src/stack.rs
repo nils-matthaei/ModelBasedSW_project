@@ -13,26 +13,7 @@ impl<T> Stack<T> {
         self.data.pop()
     }
 }
-
-// Push-style iterator over Stack by value (consuming)
-impl<T> IntoIterator for Stack<T> {
-    type Item = T;
-    type IntoIter = std::vec::IntoIter<T>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.data.into_iter()
-    }
-}
-
-// Push-style iterator over Stack by reference (non-consuming)
-impl<'a, T> IntoIterator for &'a Stack<T> {
-    type Item = &'a T;
-    type IntoIter = std::slice::Iter<'a, T>;
-    fn into_iter(self) -> Self::IntoIter {
-        self.data.iter()
-    }
-}
-
-// Pull-style iterator for Stack
+// Iterator
 pub struct StackIter<'a, T> {
     stack: &'a Stack<T>,
     index: usize,
@@ -57,5 +38,14 @@ impl<T> Stack<T> {
             stack: self,
             index: 0,
         }
+    }
+}
+
+// IntoIterator
+impl<'a, T> IntoIterator for &'a Stack<T> {
+    type Item = &'a T;
+    type IntoIter = StackIter<'a, T>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }
