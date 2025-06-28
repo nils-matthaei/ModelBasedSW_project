@@ -14,7 +14,7 @@ Go version 1.18 added the ability for users to define their own generic containe
 In Go version 1.23, a standardized form of Iterators was added. To achieve this, certain function types can act as Iterators and thus the **_ranging_ over these function types** was added. Finally, these features can be leveraged to range over user-defined containers, but also offer some additional benefits.
 
 ## 3 Iterators
-The new for/range statement does not directly support arbitrary function types. As of Go 1.23 it supports ranging over specific functions that:
+The new `for/range` statement does not directly support arbitrary function types. As of Go 1.23 it supports ranging over specific functions that:
 - take a single argument
 - the argument itself must be a function that:
   - takes zero to two arguments
@@ -109,7 +109,7 @@ func PrintStack[T any](s *Stack[T]) {
 	}
 }
 ```
-The returned iterator function takes the _yield_ function as an argument. In the case of the for/range statement, that _yield_ function is automatically generated at compile time. This is relatively complex to do efficiently, but luckily the details of this are not important for using iterators. The way iterators like this work is:
+The returned iterator function takes the _yield_ function as an argument. In the case of the `for/range` statement, that _yield_ function is automatically generated at compile time. This is relatively complex to do efficiently, but luckily the details of this are not important for using iterators. The way iterators like this work is:
 - For a sequence of values, the iterator calls a yield function with each value in the sequence.
 - If the yield function returns false, no more values are needed.
    - The iterator can now return and do any needed cleanup.
@@ -234,11 +234,119 @@ func STLfunctions() {
 }
 ```
 
-## 5 Summary
+## 5 Comparison to Rust
+Now we quickly want to look at how another modern programming language, in our case _Rust_, solves the issue of iteration over user-defined container types. In Rust this is solved via the `Iterator` and `IntoIterator` _Traits_ (a _Trait_ in Rust is like an _Interface_ in other programming languages). For this purpose, the earlier Go examples were translated into Rust, the entire source code for this can be found [here](./src_rs).
+
+### 5.1 Iterator
+The `Iterator` Trait requires one method: `next`. As usual, this method advances the iterator and returns the next value. Creating an iterator in Rust requires two steps:
+
+1. Create a struct holding the iterator state.
+2. Implement the `Iterator` trait by implementing `next`.
+
+An iterator implementation for a custom _Stack_ type could look like this.
+```Rust
+pub struct StackIter<'a, T> {
+    stack: &'a Stack<T>,
+    index: usize,
+}
+
+impl<'a, T> Iterator for StackIter<'a, T> {
+    type Item = &'a T;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.index >= self.stack.data.len() {
+            None
+        } else {
+            let item = &self.stack.data[self.index];
+            self.index += 1;
+            Some(item)
+        }
+    }
+}
+```
+By convention, the `iter()` method is used to return an iterator on a container:
+```Rust
+impl<T> Stack<T> {
+    pub fn iter(&self) -> StackIter<T> {
+        StackIter {
+            stack: self,
+            index: 0,
+        }
+    }
+}
+```
+The returned iterator can then be used both as a push iterator, to iterate over the container using `for/in` (like for/range in Go); and as a pull iterator using the `next` method:
+```Rust
+fn print_stack_iter<T: std::fmt::Display>(stack: &Stack<T>) {
+    // Push-style: for loop using an Iterator
+    for value in stack.iter() {
+        println!("{value}");
+    }
+}
+
+fn print_pairwise<T: std::fmt::Display>(stack: &Stack<T>){
+    let mut iter1 = stack.iter();
+    let mut iter2 = stack.iter();
+    // Advance iter2 by one Element
+    iter2.next();
+
+    // Pull-style: manual iteration
+    while let Some(value1) = iter1.next() && let Some(value2) = iter2.next() {
+        println!("{value1} {value2}")
+    }
+}
+```
+
+## 5.2 IntoIterator
+The `IntoIterator` defines how values of a type can be _converted into_ an iterator. One major benefit of this is that it adds some _syntactic sugar_ when working with `for` loops.
+
+`IntoIterator` requires the `into_iter()` method to be implemented for a type.
+
+For our Stack example, this could look like this:
+```Rust
+impl<'a, T> IntoIterator for &'a Stack<T> {
+    type Item = &'a T;
+    type IntoIter = StackIter<'a, T>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+```
+Having implemented `IntoIterator` for a type means that `for/in` can be used directly on a value of that type, without needing to manually call a function returning an iterator:
+
+```Rust
+fn print_stack<T: std::fmt::Display>(stack: &Stack<T>) {
+    // Push-style: for loop using IntoIterator Trait
+    for value in stack {
+        println!("{value}");
+    }
+}
+```
+
+## 5.3 Iterator provided functions
+A major difference between Traits in Rust and Interfaces in other programming languages is that Traits can also contain so-called "provided methods", which are default method implementations that types adopting the trait automatically inherit unless they choose to override them. Implementing `Iterator` provides a type with **75** such methods. These are similar to the standard library functions described in [chapter 4](#4-standard-library-functions). The main difference is that the provided methods in Rust can be used for _any type_ implementing `Iterator`, instead of just the standard library types.
+
+Those methods include:
+
+- `last`
+- `count`
+- `collect`, `collect_into`
+- `map`
+- `filter`
+- `find`
+- `max`, `min`
+- `rev` (reverse)
+- `sum`
+
+just to name a few useful ones.
+
+## 6 Summary
 TODO
 
-## 6 Sources
+## 7 Sources
 - https://go.dev/blog/range-functions
 - https://pkg.go.dev/iter
 - https://pkg.go.dev/slices
 - https://pkg.go.dev/maps
+- https://doc.rust-lang.org/std/iter/index.html
+- https://doc.rust-lang.org/std/iter/trait.Iterator.html
+- https://doc.rust-lang.org/std/iter/trait.IntoIterator.html
