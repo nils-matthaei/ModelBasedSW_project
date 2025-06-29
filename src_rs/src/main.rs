@@ -38,8 +38,4 @@ fn main() {
     print_stack(&stack);
 
     print_pairwise(&stack);
-
-    for x in stack.iter().filter(|&x| x % 2 == 0) {
-        println!("{x}");
-    }
 }
